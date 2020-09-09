@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">AI Topics</string>
+    <string name="path_finder">Path Finder</string>
+    <string name="path_finder_guide">Hold and drag blocks then place them on the grid</string>
+    <string name="wall">Wall Block</string>
+    <string name="start">Start Block</string>
+    <string name="end">End Block</string>
+    <string name="find_path">Find Path</string>
+    <string name="reset">Reset Tiles</string>
+</resources>
