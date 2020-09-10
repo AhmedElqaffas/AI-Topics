@@ -13,6 +13,6 @@ class MinesweeperViewModel: ViewModel() {
             mineSweeperPlayer.initializeCells(cellsList)
             return mutableListOf()
         }
-        return cellsList
+        return this.cellsList
     }
 }

@@ -19,6 +19,11 @@ class MinesweeperActivity : AppCompatActivity() {
         initializeCells(cellsList)
     }
 
+    override fun onDestroy() {
+        gameContainer.removeAllViews()
+        super.onDestroy()
+    }
+
     private fun setGridCells(rows: Int, columns: Int): MutableList<Cell> {
         gameContainer.columnCount = columns
         gameContainer.rowCount = rows

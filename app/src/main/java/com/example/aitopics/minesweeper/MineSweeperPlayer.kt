@@ -9,7 +9,7 @@ class MineSweeperPlayer {
     fun initializeCells(cellsList: MutableList<Cell>){
         this.cellsList.addAll(cellsList)
         spreadMines()
-        getNeighborMines()
+        countNeighborMines()
     }
 
     /**
@@ -31,17 +31,19 @@ class MineSweeperPlayer {
     /**
      * Loops over the non-mine cells to determine how many mine cells are next to it
      */
-    private fun getNeighborMines(){
+    private fun countNeighborMines(){
         for(cell in cellsList){
             // If mine, increment the count of the nearby mines in each of the neighboring cells
             if(cell.isMine()){
-                incrementNeighborCellsIndicator(cell.row, cell.column)
+                getNeighborCells(cell.row, cell.column).forEach{
+                    it.incrementNearbyMines()
+                }
             }
         }
     }
 
-    private fun incrementNeighborCellsIndicator(row: Int, column: Int){
-        val neighborCells = cellsList.filter {
+    private fun getNeighborCells(row: Int, column: Int): List<Cell>{
+        return cellsList.filter {
             (it.column == column - 1 && it.row == row)
             || (it.column == column && it.row == row - 1)
             ||(it.column == column + 1 && it.row == row)
@@ -50,8 +52,7 @@ class MineSweeperPlayer {
             ||(it.column == column + 1 && it.row == row + 1)
             ||(it.column == column + 1 && it.row == row - 1)
             ||(it.column == column - 1 && it.row == row + 1)
-        }.forEach{
-            it.incrementNearbyMines()
         }
+
     }
 }
