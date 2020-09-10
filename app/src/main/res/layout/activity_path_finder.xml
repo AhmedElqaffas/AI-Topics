@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PathFinderActivity">
+    tools:context=".PathFinderActivity"
+    android:id="@+id/rootLayout">
 
 
     <TextView
@@ -23,6 +24,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@id/startSection"
         app:layout_constraintTop_toBottomOf="@id/guideTextView"
+        android:gravity="center"
         android:layout_marginTop="10dp">
 
         <TextView
@@ -49,7 +51,8 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="@id/wallSection"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent">
+        app:layout_constraintRight_toRightOf="parent"
+        android:gravity="center">
 
         <TextView
             android:id="@+id/startBlockWord"
@@ -71,11 +74,12 @@
     <LinearLayout
         android:id="@+id/endSection"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="@id/wallSection"
-        app:layout_constraintBottom_toTopOf="@id/gameGridLayout"
+
         app:layout_constraintLeft_toRightOf="@id/startSection"
-        app:layout_constraintRight_toRightOf="parent">
+        app:layout_constraintRight_toRightOf="parent"
+        android:gravity="center">
 
         <TextView
             android:id="@+id/endBlockWord"

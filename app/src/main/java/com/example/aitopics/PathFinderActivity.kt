@@ -9,14 +9,8 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.children
 import kotlinx.android.synthetic.main.activity_path_finder.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-
 
 class PathFinderActivity : AppCompatActivity() {
 
@@ -29,23 +23,15 @@ class PathFinderActivity : AppCompatActivity() {
         val blocks = addGridCells(8, 8)
         initializeBlocks(blocks)
         observeErrorMessages()
+        observeAlgorithmState()
+        setDragListeners()
 
-        wallBlock.setOnTouchListener{view: View, _: MotionEvent ->
-            dragBlock(wallBlock)
-            view.performClick()
-            return@setOnTouchListener true
-        }
-        startBlock.setOnTouchListener{view: View, _: MotionEvent ->
-            dragBlock(startBlock)
-            view.performClick()
-            return@setOnTouchListener true
-        }
-        endBlock.setOnTouchListener{view: View, _: MotionEvent ->
-            dragBlock(endBlock)
-            view.performClick()
-            return@setOnTouchListener true
-        }
 
+    }
+
+    override fun onDestroy() {
+        gameGridLayout.removeAllViews()
+        super.onDestroy()
     }
 
     private fun addGridCells(rows: Int, columns: Int): MutableList<Block> {
@@ -57,12 +43,16 @@ class PathFinderActivity : AppCompatActivity() {
                 val cell = Block(this, row, column)
                 cell.setBackgroundColor(Color.GRAY)
                 cells.add(cell)
-                val params = setCellLayoutParams(cell)
-                cell.layoutParams = params
+
+                cell.layoutParams = setCellLayoutParams(cell)
                 gameGridLayout.addView(cell)
 
                 cell.setOnDragListener { _, event ->
                     dropListener(cell, event)
+                }
+
+                cell.setOnClickListener{
+                    cell.reset()
                 }
             }
         }
@@ -80,13 +70,35 @@ class PathFinderActivity : AppCompatActivity() {
         return params
     }
 
-    private fun initializeBlocks(blocks: MutableList<Block>) {
-        pathFinderViewModel.initializeBlocks(blocks).observe(this){
-            print("")
 
+    private fun initializeBlocks(blocks: MutableList<Block>) {
+        val blocksList = pathFinderViewModel.initializeBlocks(blocks)
+        // If this is the first time to call initializeBlocks, it will return empty list, the loop
+        // won't be executed, else (screen rotated), we will set the current cells to the cells in
+        // the model
+        for(cell in blocksList){
+            cell.layoutParams = setCellLayoutParams(cell)
+            gameGridLayout.addView(cell)
         }
     }
 
+    private fun setDragListeners(){
+        wallBlock.setOnTouchListener{view: View, _: MotionEvent ->
+            dragBlock(wallBlock)
+            view.performClick()
+            return@setOnTouchListener true
+        }
+        startBlock.setOnTouchListener{view: View, _: MotionEvent ->
+            dragBlock(startBlock)
+            view.performClick()
+            return@setOnTouchListener true
+        }
+        endBlock.setOnTouchListener{view: View, _: MotionEvent ->
+            dragBlock(endBlock)
+            view.performClick()
+            return@setOnTouchListener true
+        }
+    }
 
     private fun dragBlock(view: ImageView){
         val data = ClipData.newPlainText("type", view.tag.toString())
@@ -114,8 +126,17 @@ class PathFinderActivity : AppCompatActivity() {
     private fun observeErrorMessages(){
         pathFinderViewModel.errorMessagesLiveData.observe(this){
             it?.apply {
-                Toast.makeText(this@PathFinderActivity, this, Toast.LENGTH_LONG).show()
+                Toast.makeText(this@PathFinderActivity, it, Toast.LENGTH_LONG).show()
             }
+        }
+    }
+
+    /**
+     * Observes whether the algorithm is running or not
+     */
+    private fun observeAlgorithmState(){
+        pathFinderViewModel.algorithmRunning.observe(this){
+            setUserInteraction(!it)
         }
     }
 
@@ -130,5 +151,17 @@ class PathFinderActivity : AppCompatActivity() {
             R.id.reset -> pathFinderViewModel.reset()
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    /**
+     * Enables or disables user interaction based on the parameter passed to it
+     */
+    private fun setUserInteraction(state: Boolean){
+        for(cell in gameGridLayout.children){
+            cell.isClickable = state
+        }
+        wallBlock.isEnabled = state
+        startBlock.isEnabled = state
+        endBlock.isEnabled = state
     }
 }

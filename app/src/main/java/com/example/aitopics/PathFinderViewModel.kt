@@ -1,16 +1,29 @@
 package com.example.aitopics
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class PathFinderViewModel: ViewModel() {
 
-    private val pathFinder = PathFinder()
-    var errorMessagesLiveData = MutableLiveData<String?>()
 
-    fun initializeBlocks(cells: MutableList<Block>): LiveData<Block>{
-        return pathFinder.initializeBlocks(cells)
+    var errorMessagesLiveData = MutableLiveData<String?>()
+    var algorithmRunning = MutableLiveData<Boolean>()
+    private var pathFinder = PathFinder()
+    private val blocksList = mutableListOf<Block>()
+
+
+    /**
+     * If there are no existing data, this method initializes the blocks, else, it only returns
+     * the existing data
+     */
+    fun initializeBlocks(cells: MutableList<Block>): MutableList<Block>{
+        if(blocksList.isEmpty()){
+            blocksList.addAll(cells)
+            pathFinder.initializeBlocks(blocksList)
+            return mutableListOf()
+        }
+
+        return blocksList
     }
 
     fun changeBlockType(cell: Block, type: String){
@@ -24,7 +37,12 @@ class PathFinderViewModel: ViewModel() {
     }
 
     fun reset(){
-        pathFinder.reset()
+        algorithmRunning.value = false
+        pathFinder = PathFinder()
+        for(block in blocksList){
+            block.reset()
+        }
+        pathFinder.initializeBlocks(blocksList)
     }
 
     private fun postToastMessage(message: String?){
@@ -35,6 +53,9 @@ class PathFinderViewModel: ViewModel() {
              Removing this line will cause the toast to keep appearing every time the screen is rotated
             */
             errorMessagesLiveData.value = null
+        }
+        else if(message != null && message.isEmpty()){
+            algorithmRunning.value = true
         }
     }
 }

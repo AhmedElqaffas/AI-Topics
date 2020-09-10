@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">AI Topics</string>
     <string name="path_finder">Path Finder</string>
-    <string name="path_finder_guide">Hold and drag blocks then place them on the grid</string>
+    <string name="path_finder_guide">Drag blocks and place them on the grid</string>
     <string name="wall">Wall Block</string>
     <string name="start">Start Block</string>
     <string name="end">End Block</string>

@@ -3,6 +3,10 @@ package com.example.aitopics
 import android.content.Context
 import android.graphics.Color
 
+/**
+ * This is the node data structure of the search algorithm
+ * The state of each node is its (i,j) coordinates
+ */
 class Block(private val cont: Context, val row: Int, val column: Int):
     androidx.appcompat.widget.AppCompatImageView(cont){
 

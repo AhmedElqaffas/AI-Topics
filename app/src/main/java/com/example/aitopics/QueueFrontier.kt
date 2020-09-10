@@ -1,5 +1,8 @@
 package com.example.aitopics
 
+/**
+ * This is the data structure used to implement Breadth-First Search algorithm
+ */
 class QueueFrontier {
     private val frontier = mutableListOf<Block>()
 

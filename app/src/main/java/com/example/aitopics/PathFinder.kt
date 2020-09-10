@@ -1,24 +1,20 @@
 package com.example.aitopics
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 
 class PathFinder{
 
+    // List of block in the game
     private val blocksList: MutableList<Block> = mutableListOf()
-    private val blocksListLiveData = MutableLiveData<Block>()
-    private lateinit var endBlock: Block
-    private lateinit var startBlock: Block
     private val visitedBlocks = mutableListOf<Block>()
     private val queueFrontier = QueueFrontier()
-    private var step = 0L
+    private var solutionFound = false
 
-    fun initializeBlocks(blocksList: MutableList<Block>): LiveData<Block> {
+
+    fun initializeBlocks(blocksList: MutableList<Block>){
         this.blocksList.addAll(blocksList)
-        return blocksListLiveData
     }
 
     fun changeBlockType(cell: Block, blockType: String): String?{
@@ -27,22 +23,16 @@ class PathFinder{
                 cell.setWall()
             }
             "start" -> {
-                for(block in blocksList){
-                    if (block.isStart){
-                        return "There is already a starting point"
-                    }
+                if(getStartNode() != null){
+                    return "There is already a starting point"
                 }
                 cell.setStart()
-                startBlock = cell
             }
             else -> {
-                for(block in blocksList){
-                    if (block.isEnd){
-                        return "There is already an end point"
-                    }
+                if (getEndNode() != null){
+                    return "There is already an end point"
                 }
                 cell.setEnd()
-                endBlock = cell
             }
         }
         return null
@@ -51,21 +41,13 @@ class PathFinder{
     fun startAlgorithm(): String{
         val startNode = getStartNode()
         val endNode = getEndNode()
-        return if(startNode != null && endNode != null){
+        if(startNode != null && endNode != null){
             visitedBlocks.add(startNode)
             return findPath(startNode, endNode)
         } else if(startNode == null){
-            "Insert a starting point"
+            return "Insert a starting point"
         } else{
-            "Insert an end point"
-        }
-    }
-
-    fun reset(){
-        queueFrontier.clearFrontier()
-        visitedBlocks.clear()
-        for(block in blocksList){
-            block.reset()
+            return "Insert an end point"
         }
     }
 
@@ -89,28 +71,45 @@ class PathFinder{
 
     private fun findPath(startingNode: Block, endingNode: Block): String{
         var currentBlock = startingNode
-        var neighbors: List<Block>
         while(true) {
-            neighbors = getNeighbors(currentBlock)
-            neighbors.forEach {
-                if (it == endingNode) {
-                    it.parent = currentBlock
-                    solutionFound()
-                    return ""
-                } else if (!queueFrontier.doesBlockExists(it) && !visitedBlocks.contains(it)) {
-                    it.parent = currentBlock
-                    queueFrontier.add(it)
-                }
+            // put the neighbors in the queue to be visited
+            addPossibleNextStatesToQueue(currentBlock, endingNode)
+            if(solutionFound)
+                return ""
+            // Select the first node in the queue to visit
+            val nextNode = visitNextNode()
+            if(nextNode != null){
+                currentBlock = nextNode
             }
-
-            try {
-                currentBlock = getNextNode()
-                setBlockAsVisited(currentBlock)
-                step += 1000
-            } catch (e: Exception) {
+            else{
+                // The queue was empty, so no solution
                 return "No path found"
             }
+        }
+    }
 
+    private fun addPossibleNextStatesToQueue(currentBlock: Block, endingNode: Block) {
+        val neighbors: List<Block> = getNeighbors(currentBlock)
+        neighbors.forEach {
+            if (it == endingNode) {
+                it.parent = currentBlock
+                solutionFound()
+                // If this neighbor is already visited or already in the queue to be visited, don't
+                // put it in the queue again
+            } else if (!queueFrontier.doesBlockExists(it) && !visitedBlocks.contains(it)) {
+                it.parent = currentBlock
+                queueFrontier.add(it)
+            }
+        }
+    }
+
+    private fun visitNextNode(): Block?{
+        return try {
+            val currentBlock = getNextNode()
+            visitedBlocks.add(currentBlock)
+            currentBlock
+        } catch (e: Exception) {
+            null
         }
     }
 
@@ -143,20 +142,21 @@ class PathFinder{
     }
 
     private suspend fun backtrackPath(endBlock: Block) {
-
+        // remove the start node to keep its color green
+        visitedBlocks.removeAt(0)
+        // Paint a visited node yellow every few milliseconds
         visitedBlocks.forEach {
-
-                delay(500)
-                println("------------------------------------------  ${Thread.currentThread().name}")
-
+            delay(200)
+            // setVisited() changes the background color so it must be done from main thread
             withContext(Main){
-                println("------*******************-------  ${Thread.currentThread().name}")
                 it.setVisited()
             }
         }
 
+        // Backtrack the shortest path
         var currentBlock = endBlock
         while (currentBlock.parent != null) {
+            delay(200)
             withContext(Main) {
                 currentBlock.setBelongsToShortestPath()
             }
@@ -164,13 +164,10 @@ class PathFinder{
         }
     }
 
-    private fun setBlockAsVisited(block: Block){
-        visitedBlocks.add(block)
-    }
-
     private fun solutionFound(){
+        solutionFound = true
         GlobalScope.launch(IO) {
-            backtrackPath(endBlock)
+            backtrackPath(getEndNode()!!)
             queueFrontier.clearFrontier()
             visitedBlocks.clear()
         }
