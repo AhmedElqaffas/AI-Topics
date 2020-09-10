@@ -1,4 +1,4 @@
-package com.example.aitopics
+package com.example.aitopics.pathfinder
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -34,6 +34,14 @@ class PathFinderViewModel: ViewModel() {
     fun startAlgorithm(){
         val message = pathFinder.startAlgorithm()
         postToastMessage(message)
+
+        if(message.isEmpty() || message == "No path found"){
+            algorithmRunning.value = true
+        }
+    }
+
+    fun restartAnimation(){
+        pathFinder.restartAnimation()
     }
 
     fun reset(){
@@ -54,8 +62,6 @@ class PathFinderViewModel: ViewModel() {
             */
             errorMessagesLiveData.value = null
         }
-        else if(message != null && message.isEmpty()){
-            algorithmRunning.value = true
-        }
+
     }
 }

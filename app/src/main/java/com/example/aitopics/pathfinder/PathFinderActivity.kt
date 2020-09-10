@@ -1,4 +1,4 @@
-package com.example.aitopics
+package com.example.aitopics.pathfinder
 
 import android.content.ClipData
 import android.graphics.Color
@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.children
+import com.example.aitopics.R
 import kotlinx.android.synthetic.main.activity_path_finder.*
 
 class PathFinderActivity : AppCompatActivity() {
@@ -148,6 +149,7 @@ class PathFinderActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.findPath -> pathFinderViewModel.startAlgorithm()
+            R.id.restart -> pathFinderViewModel.restartAnimation()
             R.id.reset -> pathFinderViewModel.reset()
         }
         return super.onOptionsItemSelected(item)

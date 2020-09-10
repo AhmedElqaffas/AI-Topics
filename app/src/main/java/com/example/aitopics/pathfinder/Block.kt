@@ -1,4 +1,4 @@
-package com.example.aitopics
+package com.example.aitopics.pathfinder
 
 import android.content.Context
 import android.graphics.Color
@@ -51,5 +51,12 @@ class Block(private val cont: Context, val row: Int, val column: Int):
         isStart = false
         parent = null
         setBackgroundColor(Color.GRAY)
+    }
+
+    fun resetColorOnly(){
+        if(!isStart && !isWall && !isEnd)
+            setBackgroundColor(Color.GRAY)
+        else if(isEnd)
+            setBackgroundColor(Color.RED)
     }
 }

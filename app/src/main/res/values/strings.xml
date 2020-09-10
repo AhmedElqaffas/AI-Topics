@@ -7,4 +7,5 @@
     <string name="end">End Block</string>
     <string name="find_path">Find Path</string>
     <string name="reset">Reset Tiles</string>
+    <string name="restart">Restart Animation</string>
 </resources>

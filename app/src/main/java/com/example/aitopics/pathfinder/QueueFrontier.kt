@@ -1,4 +1,6 @@
-package com.example.aitopics
+package com.example.aitopics.pathfinder
+
+import com.example.aitopics.pathfinder.Block
 
 /**
  * This is the data structure used to implement Breadth-First Search algorithm
@@ -14,11 +16,7 @@ class QueueFrontier {
         return frontier.contains(block)
     }
 
-    fun clearFrontier(){
-        frontier.clear()
-    }
-
-    fun removeNode(): Block{
+    fun removeNode(): Block {
         if(frontier.isEmpty()){
             throw Exception("Empty Frontier")
         }

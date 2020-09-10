@@ -1,4 +1,4 @@
-package com.example.aitopics
+package com.example.aitopics.pathfinder
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
@@ -49,6 +49,17 @@ class PathFinder{
         } else{
             return "Insert an end point"
         }
+    }
+
+    fun restartAnimation(){
+        // If the user clicked restart animation before finding the solution, do nothing
+        if(!solutionFound)
+            return
+
+        for(block in blocksList){
+            block.resetColorOnly()
+        }
+        solutionFound()
     }
 
     private fun getStartNode(): Block?{
@@ -137,19 +148,20 @@ class PathFinder{
         return neighborsList
     }
 
-    private fun getNextNode(): Block{
+    private fun getNextNode(): Block {
         return queueFrontier.removeNode()
     }
 
-    private suspend fun backtrackPath(endBlock: Block) {
-        // remove the start node to keep its color green
-        visitedBlocks.removeAt(0)
+     private suspend fun backtrackPath(endBlock: Block) {
         // Paint a visited node yellow every few milliseconds
         visitedBlocks.forEach {
-            delay(200)
-            // setVisited() changes the background color so it must be done from main thread
-            withContext(Main){
-                it.setVisited()
+            // skip the start node to keep its color green
+            if(it != visitedBlocks[0]){
+                delay(200)
+                // setVisited() changes the background color so it must be done from main thread
+                withContext(Main){
+                    it.setVisited()
+                }
             }
         }
 
@@ -164,12 +176,10 @@ class PathFinder{
         }
     }
 
-    private fun solutionFound(){
+     private fun solutionFound(){
         solutionFound = true
         GlobalScope.launch(IO) {
             backtrackPath(getEndNode()!!)
-            queueFrontier.clearFrontier()
-            visitedBlocks.clear()
         }
     }
     
