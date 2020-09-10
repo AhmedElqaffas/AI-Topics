@@ -1,19 +1,22 @@
 package com.example.aitopics.minesweeper
 
-import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.GridLayout
+import androidx.activity.viewModels
 import com.example.aitopics.R
-import com.example.aitopics.pathfinder.Block
 import kotlinx.android.synthetic.main.activity_minesweeper.*
 
 class MinesweeperActivity : AppCompatActivity() {
+
+    private val minesweeperViewModel: MinesweeperViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_minesweeper)
 
         val cellsList = setGridCells(8,8)
+        initializeCells(cellsList)
     }
 
     private fun setGridCells(rows: Int, columns: Int): MutableList<Cell> {
@@ -41,5 +44,16 @@ class MinesweeperActivity : AppCompatActivity() {
         params.columnSpec = GridLayout.spec(cell.column, 1, 1f)
         params.rowSpec = GridLayout.spec(cell.row, 1, 1f)
         return params
+    }
+
+    private fun initializeCells(cells: MutableList<Cell>){
+        val cellsList = minesweeperViewModel.initializeCells(cells)
+        // If this is the first time to call initializeCells, it will return empty list, the loop
+        // won't be executed, else (screen rotated), we will set the current cells to the cells in
+        // the model
+        for(cell in cellsList){
+            cell.layoutParams = setCellLayoutParams(cell)
+            gameContainer.addView(cell)
+        }
     }
 }
