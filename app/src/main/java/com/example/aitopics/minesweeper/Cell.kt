@@ -1,6 +1,5 @@
 package com.example.aitopics.minesweeper
 
-import android.R.drawable
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
@@ -15,8 +14,10 @@ import com.example.aitopics.R
 class Cell(context: Context, val row: Int, val column: Int):
     androidx.appcompat.widget.AppCompatTextView(context) {
 
+    var isRevealed = false
+    var minesNearby = 0
     private var isMine = false
-    private var minesNearby = 0
+
 
     init{
         setBackgroundColor(Color.BLACK)
@@ -49,5 +50,17 @@ class Cell(context: Context, val row: Int, val column: Int):
         } else{
             minesNearby.toString()
         }
+    }
+
+    fun reveal(){
+        setCellText()
+        isRevealed = true
+    }
+
+    fun reset(){
+        isRevealed = false
+        minesNearby = 0
+        isMine = false
+        text = ""
     }
 }

@@ -2,8 +2,10 @@ package com.example.aitopics.minesweeper
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.GridLayout
 import androidx.activity.viewModels
+import androidx.core.view.children
 import com.example.aitopics.R
 import kotlinx.android.synthetic.main.activity_minesweeper.*
 
@@ -17,6 +19,9 @@ class MinesweeperActivity : AppCompatActivity() {
 
         val cellsList = setGridCells(8,8)
         initializeCells(cellsList)
+        observeGameState()
+        setAssistButtonListener()
+        setResetButtonListener()
     }
 
     override fun onDestroy() {
@@ -34,6 +39,10 @@ class MinesweeperActivity : AppCompatActivity() {
                 cells.add(cell)
                 cell.layoutParams = setCellLayoutParams(cell)
                 gameContainer.addView(cell)
+
+                cell.setOnClickListener {
+                    cellClicked(cell)
+                }
             }
         }
 
@@ -59,6 +68,49 @@ class MinesweeperActivity : AppCompatActivity() {
         for(cell in cellsList){
             cell.layoutParams = setCellLayoutParams(cell)
             gameContainer.addView(cell)
+        }
+    }
+
+    private fun cellClicked(cell: Cell){
+        minesweeperViewModel.makeMove(cell)
+    }
+
+    private fun observeGameState(){
+        minesweeperViewModel.hasPlayerWon.observe(this){
+            if(it){
+                setUserInteraction(false)
+                assistWordText.visibility = View.INVISIBLE
+                aiMove.visibility = View.INVISIBLE
+                minesweeperResultTextView.visibility = View.VISIBLE
+
+                minesweeperResultTextView.apply{
+                    text = minesweeperViewModel.resultText
+                    setTextColor(minesweeperViewModel.resultTextColor)
+                }
+            }
+        }
+    }
+
+    private fun setUserInteraction(state: Boolean){
+        for(c in gameContainer.children){
+            c.isClickable = state
+        }
+        aiMove.isClickable = state
+    }
+
+    private fun setAssistButtonListener(){
+        aiMove.setOnClickListener {
+            minesweeperViewModel.makeAIMove()
+        }
+    }
+
+    private fun setResetButtonListener(){
+        resetButton.setOnClickListener {
+            setUserInteraction(true)
+            assistWordText.visibility = View.VISIBLE
+            aiMove.visibility = View.VISIBLE
+            minesweeperResultTextView.visibility = View.INVISIBLE
+            minesweeperViewModel.reset()
         }
     }
 }

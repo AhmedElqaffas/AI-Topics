@@ -8,6 +8,7 @@
     <string name="end">End Block</string>
     <string name="find_path">Find Path</string>
     <string name="reset">Reset Tiles</string>
+    <string name="reset_game">Reset Game</string>
     <string name="restart">Restart Animation</string>
     <string name="assist_me">Assist Me</string>
 </resources>
