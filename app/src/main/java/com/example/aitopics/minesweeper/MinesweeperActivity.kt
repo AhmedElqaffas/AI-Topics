@@ -76,7 +76,7 @@ class MinesweeperActivity : AppCompatActivity() {
     }
 
     private fun observeGameState(){
-        minesweeperViewModel.hasPlayerWon.observe(this){
+        minesweeperViewModel.hasGameConcluded.observe(this){
             if(it){
                 setUserInteraction(false)
                 assistWordText.visibility = View.INVISIBLE
