@@ -2,6 +2,7 @@
     <string name="app_name">AI Topics</string>
     <string name="path_finder">Path Finder</string>
     <string name="assisted_minesweeper">Assisted Minesweeper</string>
+    <string name="sudoku">Sudoku</string>
     <string name="path_finder_guide">Drag blocks and place them on the grid</string>
     <string name="wall">Wall Block</string>
     <string name="start">Start Block</string>
