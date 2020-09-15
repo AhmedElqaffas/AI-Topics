@@ -1,5 +1,10 @@
 package com.example.aitopics.sudoku
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+
 class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
 
     init{
@@ -11,12 +16,20 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
      */
     private fun generateSudoku(){
         setArcs()
-        backtrack()
-        for(block in blocksList){
-            block.cellsList.forEach {
-                it.showValue()
+        var assignment: MutableMap<Cell, Int> = mutableMapOf()
+        val job = CoroutineScope(IO).launch {
+            assignment = backtrack()!!
+        }
+
+        CoroutineScope(Main).launch {
+            job.join()
+            for(cell in assignment){
+                cell.key.value = cell.value
+                cell.key.showValue()
             }
         }
+
+
     }
 
     /**
@@ -41,13 +54,18 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
         }
     }
 
-    private fun assignmentComplete(assignment: MutableMap<Cell, Int>): Boolean{
+    private fun isAssignmentComplete(assignment: MutableMap<Cell, Int>): Boolean{
         if(assignment.size < 81){
             return false
         }
         return true
     }
 
+    /**
+     * Checks the consistency of assigned variables values. If two variables (cells) on the same row
+     * or column or in the same block have the same value, this method returns false as the
+     * constraint is violated. Otherwise, it returns true
+     */
     private fun consistent(assignment: MutableMap<Cell, Int>): Boolean{
         for(entry in assignment){
             for(otherEntry in assignment){
@@ -62,7 +80,7 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
     }
 
     private fun orderDomainValues(cell: Cell): List<Int>{
-        return cell.possibleValues
+        return cell.possibleValues.shuffled()
     }
 
     private fun selectUnassignedVariable(assignment: MutableMap<Cell, Int>): Cell?{
@@ -77,11 +95,7 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
     }
 
     private fun backtrack(assignment: MutableMap<Cell, Int> = mutableMapOf()): MutableMap<Cell, Int>?{
-        if(assignmentComplete(assignment)){
-            for(cell in assignment){
-                cell.key.value = cell.value
-                cell.key.showValue()
-            }
+        if(isAssignmentComplete(assignment)){
             return assignment
         }
         val nextVariable = selectUnassignedVariable(assignment)
