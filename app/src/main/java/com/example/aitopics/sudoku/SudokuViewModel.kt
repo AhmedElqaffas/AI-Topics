@@ -14,8 +14,11 @@ class SudokuViewModel: ViewModel() {
         return this.blocksList
     }
 
+
     private fun createBlocks(): MutableList<SudokuBlock>{
         val sudokuBlocksList: MutableList<SudokuBlock> = mutableListOf()
+        // Instead of creating two nested loops, I created one loop only with the help of row and column
+        // variables to control the row,column values given to each block
         var row = -1
         var column = -1
         for(block in 0..8){

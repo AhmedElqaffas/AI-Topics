@@ -2,7 +2,6 @@ package com.example.aitopics.sudoku
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.GridLayout
 import androidx.activity.viewModels
 import androidx.core.view.children
@@ -28,8 +27,10 @@ class SudokuActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    /**
+     * Assigns each SudokuBlock to its position in the layout
+     */
     private fun setGridBlocks(sudokuBlocksList: MutableList<SudokuBlock>){
-
         for(block in 0 until sudokuContainer.childCount){
             setBlockCells(sudokuContainer.getChildAt(block) as GridLayout, sudokuBlocksList[block])
         }
@@ -44,6 +45,10 @@ class SudokuActivity : AppCompatActivity() {
             val cells = mutableListOf<Cell>()
             for (row in 0 until 3){
                 for (column in 0 until 3) {
+                    // I needed the cells rows and columns to range from 0..8 to be able to get the
+                    // neighbors of each cell later on. To avoid having the cells rows and columns from
+                    // getting stuck in the loops range (0..3), I use the row and column of the parent block
+                    // to convert the 0..3 range to 0..8 range
                     val cell = Cell( this, row + (3 * sudokuBlock.row), column + (3 * sudokuBlock.column), sudokuBlock)
                     cells.add(cell)
                     cell.layoutParams = setCellLayoutParams(cell)

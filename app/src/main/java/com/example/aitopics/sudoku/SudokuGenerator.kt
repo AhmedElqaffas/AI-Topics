@@ -7,11 +7,10 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
     }
 
     /**
-     * Enforce arc consistency, then solve the Constraint Satisfaction Problem (CSP)
+     * Solve the Constraint Satisfaction Problem (CSP)
      */
     private fun generateSudoku(){
-        setBlocksNeighbors()
-        runAC3()
+        setArcs()
         backtrack()
         for(block in blocksList){
             block.cellsList.forEach {
@@ -20,67 +19,26 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
         }
     }
 
-    private fun setBlocksNeighbors(){
+    /**
+     * The arcs are the connections between variables. In sudoku, the variables are the cells
+     * and the connected cells are those who are on the same row or column
+     */
+    private fun setArcs(){
         for(block in blocksList){
-            block.neighborsList = getNeighborBlocks(block)
+            setBlocksNeighbors(block)
+            setCellsNeighbors(block)
         }
     }
 
-    private fun revise(x: Cell, y: Cell): Boolean{
-        var revised = false
-        val tobe_removed = mutableListOf<Int>()
-        for(x_value in x.possibleValues){
-            var foundValidValue = false
-            for(y_value in y.possibleValues){
-                if(y_value != x_value){
-                    foundValidValue = true
-                    break
-                }
-            }
-            if(!foundValidValue){
-                revised = true
-                tobe_removed.add(x_value)
-            }
+    private fun setBlocksNeighbors(block: SudokuBlock){
+        block.neighborsList = getNeighborBlocks(block)
 
-            tobe_removed.forEach {
-                x.possibleValues.remove(it)
-            }
-        }
-        return revised
     }
 
-    private fun runAC3(/*arcs: List<Pair<Cell, Cell>>? = null*/): Boolean{
-        //if(arcs.isNullOrEmpty()){
-            val arcs = getArcs()
-        //}
-        for(arc in arcs){
-            if(revise(arc.first, arc.second)){
-                if(arc.first.possibleValues.isNullOrEmpty()){
-                    return false
-                }
-                for(neighbor in arc.first.neighborsList){
-                    if(neighbor != arc.second){
-                        arcs.add(Pair(neighbor, arc.first))
-                    }
-                }
-            }
+    private fun setCellsNeighbors(block: SudokuBlock){
+        for (cell in block.cellsList) {
+            cell.neighborsList = getNeighborCells(cell)
         }
-        return true
-    }
-
-    private fun getArcs(): MutableList<Pair<Cell, Cell>>{
-        val arcs = mutableListOf<Pair<Cell, Cell>>()
-        for(block in blocksList){
-            for(cell in block.cellsList){
-                cell.neighborsList = getNeighborCells(cell)
-                cell.neighborsList.forEach {
-                    //if(!arcs.contains(Pair(it,cell))){
-                        arcs.add(Pair(cell, it))
-                    //}
-                }
-            }
-        }
-        return arcs
     }
 
     private fun assignmentComplete(assignment: MutableMap<Cell, Int>): Boolean{
@@ -107,8 +65,7 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
         return cell.possibleValues
     }
 
-    private fun selectUnassignedVariable(assignment: MutableMap<Cell, Int>): Cell{
-        var selectedVariable: Cell? = null
+    private fun selectUnassignedVariable(assignment: MutableMap<Cell, Int>): Cell?{
         for(block in blocksList){
             for(cell in block.cellsList){
                 if(!assignment.contains(cell)){
@@ -116,7 +73,7 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
                 }
             }
         }
-        return selectedVariable!!
+        return null
     }
 
     private fun backtrack(assignment: MutableMap<Cell, Int> = mutableMapOf()): MutableMap<Cell, Int>?{
@@ -128,7 +85,7 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
             return assignment
         }
         val nextVariable = selectUnassignedVariable(assignment)
-        for(value in orderDomainValues(nextVariable)){
+        for(value in orderDomainValues(nextVariable!!)){
             assignment[nextVariable] = value
             if(consistent(assignment)){
                 val result = backtrack(assignment)
@@ -148,7 +105,7 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
             if(entry == block){
                 continue
             }
-            if(areInSameColumn(entry, block) || areInSameRow(entry,block)){
+            if(areBlocksInSameColumn(entry, block) || areBlocksInSameRow(entry,block)){
                 neighbors.add(entry)
             }
         }
@@ -165,7 +122,7 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
         // Add cells in same row or column
         for(block in cell.parent.neighborsList){
             for(neighborBlockCell in block.cellsList){
-                if(areInSameColumn(neighborBlockCell, cell) || areInSameRow(neighborBlockCell,cell)){
+                if(areCellsInSameRowOrColumn(neighborBlockCell, cell)){
                     neighbors.add(neighborBlockCell)
                 }
             }
@@ -173,32 +130,21 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
         return neighbors
     }
 
-    private fun <T: Any> areInSameColumn(potentialNeighbor: T, current: T): Boolean{
-        if(potentialNeighbor is Cell && current is Cell){
-            return potentialNeighbor.column == current.column/*&&
-                    (potentialNeighbor.row == current.row + 1 || potentialNeighbor.row == current.row + 2
-                            || potentialNeighbor.row == current.row - 1  || potentialNeighbor.row == current.row - 2)*/
-        }
-        else if(potentialNeighbor is SudokuBlock && current is SudokuBlock){
-            return potentialNeighbor.column == current.column &&
-                    (potentialNeighbor.row == current.row + 1 || potentialNeighbor.row == current.row + 2
-                            || potentialNeighbor.row == current.row - 1  || potentialNeighbor.row == current.row - 2)
-        }
-        return false
+
+    private fun areBlocksInSameColumn(potentialNeighbor: SudokuBlock, current: SudokuBlock): Boolean{
+        return potentialNeighbor.column == current.column &&
+                (potentialNeighbor.row == current.row + 1 || potentialNeighbor.row == current.row + 2
+                        || potentialNeighbor.row == current.row - 1  || potentialNeighbor.row == current.row - 2)
     }
 
-    private fun <T: Any> areInSameRow(potentialNeighbor: T, current: T): Boolean{
-        if(potentialNeighbor is Cell && current is Cell){
-            return potentialNeighbor.row == current.row/*potentialNeighbor.row == current.row &&
-                    (potentialNeighbor.column == current.column + 1 || potentialNeighbor.column == current.column + 2
-                            || potentialNeighbor.column == current.column - 1  || potentialNeighbor.column == current.column - 2)*/
-        }
-        else if(potentialNeighbor is SudokuBlock && current is SudokuBlock){
-            return potentialNeighbor.row == current.row &&
-                    (potentialNeighbor.column == current.column + 1 || potentialNeighbor.column == current.column + 2
-                            || potentialNeighbor.column == current.column - 1  || potentialNeighbor.column == current.column - 2)
-        }
-        return false
+    private fun areBlocksInSameRow(potentialNeighbor: SudokuBlock, current: SudokuBlock): Boolean{
+        return potentialNeighbor.row == current.row &&
+                (potentialNeighbor.column == current.column + 1 || potentialNeighbor.column == current.column + 2
+                        || potentialNeighbor.column == current.column - 1  || potentialNeighbor.column == current.column - 2)
+    }
+
+    private fun areCellsInSameRowOrColumn(potentialNeighbor: Cell, current: Cell): Boolean{
+        return potentialNeighbor.row == current.row || potentialNeighbor.column == current.column
     }
 }
 
