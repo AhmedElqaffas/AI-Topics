@@ -56,12 +56,14 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
      * or column or in the same block have the same value, this method returns false as the
      * constraint is violated. Otherwise, it returns true
      */
-    private fun consistent(assignment: MutableMap<Cell, Int>): Boolean{
-        for(entry in assignment){
-            for(otherEntry in assignment){
-                if(entry.key == otherEntry.key)
-                    continue
-                if(entry.key.neighborsList.contains(otherEntry.key) && entry.value == otherEntry.value){
+     fun isAssignmentConsistent(assignment: MutableMap<Cell, Int>): Boolean{
+        // Convert the map keys to list to be able to navigate the map by index
+        val keys = assignment.keys.toList()
+        for(entryIndex in 0 until keys.size - 1){
+            for(otherEntryIndex in entryIndex + 1 until keys.size){
+                // If cells are neighbors and have the same value, return false
+                if(keys[entryIndex].neighborsList.contains(keys[otherEntryIndex])
+                    && assignment[keys[entryIndex]] == assignment[keys[otherEntryIndex]]){
                     return false
                 }
             }
@@ -101,7 +103,7 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
             assignment[nextVariable] = value
             // If the assignment is consistent till now, take another step by calling backtrack()
             // Otherwise, choose another value for this variable
-            if(consistent(assignment)){
+            if(isAssignmentConsistent(assignment)){
                 val result = backtrack(assignment)
                 if(!result.isNullOrEmpty()){
                     return result

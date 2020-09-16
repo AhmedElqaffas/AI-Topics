@@ -2,6 +2,7 @@ package com.example.aitopics.sudoku
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.GridLayout
@@ -37,9 +38,20 @@ class SudokuActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
+            R.id.checkAnswer -> checkAnswer()
             R.id.reset -> sudokuViewModel.resetGame()
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun checkAnswer(){
+        val toast: Toast = if(sudokuViewModel.validateAnswer()){
+            Toast.makeText(this, "Correct Solution", Toast.LENGTH_LONG)
+        } else{
+            Toast.makeText(this, "Try Again", Toast.LENGTH_LONG)
+        }
+        toast.setGravity(Gravity.CENTER, 0, 0)
+        toast.show()
     }
 
     private fun removeAllCellViews(){

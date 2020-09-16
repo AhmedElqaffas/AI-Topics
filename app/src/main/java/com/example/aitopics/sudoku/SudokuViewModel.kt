@@ -26,6 +26,16 @@ class SudokuViewModel: ViewModel() {
         return isSudokuGenerated
     }
 
+    fun validateAnswer(): Boolean{
+        val variablesAndValuesMap = mutableMapOf<Cell, Int>()
+        for(block in blocksList){
+            for(cell in block.cellsList){
+                variablesAndValuesMap[cell] = cell.value
+            }
+        }
+        return sudokuGenerator!!.isAssignmentConsistent(variablesAndValuesMap)
+    }
+
     fun resetGame(){
         resetAllCells()
         sudokuGenerator = SudokuGenerator(blocksList)
