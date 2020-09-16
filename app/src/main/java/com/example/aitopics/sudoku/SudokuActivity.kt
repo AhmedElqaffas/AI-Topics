@@ -2,6 +2,8 @@ package com.example.aitopics.sudoku
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.GridLayout
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -26,6 +28,18 @@ class SudokuActivity : AppCompatActivity() {
     override fun onDestroy() {
         removeAllCellViews()
         super.onDestroy()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.sudoku_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.reset -> sudokuViewModel.resetGame()
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun removeAllCellViews(){
@@ -89,6 +103,9 @@ class SudokuActivity : AppCompatActivity() {
         sudokuViewModel.initializeSudokuGenerator().observe(this){
             if(it) {
                 hideLoadingDialogIfExists()
+            }
+            else{
+                showLoadingDialogIfNotAlreadyShown()
             }
         }
     }

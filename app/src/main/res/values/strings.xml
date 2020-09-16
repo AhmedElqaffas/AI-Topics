@@ -12,4 +12,5 @@
     <string name="reset_game">Reset Game</string>
     <string name="restart">Restart Animation</string>
     <string name="assist_me">Assist Me</string>
+    <string name="check_answer">Check Answer</string>
 </resources>

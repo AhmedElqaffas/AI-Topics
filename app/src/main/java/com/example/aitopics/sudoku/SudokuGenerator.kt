@@ -18,13 +18,19 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
 
     /**
      * The arcs are the connections between variables. In sudoku, the variables are the cells
-     * and the connected cells are those who are on the same row or column
+     * and the connected cells are those who are on the same row or column.
      */
     private fun setArcs(){
-        for(block in blocksList){
-            setBlocksNeighbors(block)
-            setCellsNeighbors(block)
+        //If the game is reset, the arcs will still be the same, no need to set them again
+        // So we check on a block and see if its connections is set, then the rest of the blocks and
+        // cells are set too. If not, set the connections.
+        if(blocksList[0].neighborsList.isEmpty()){
+            for(block in blocksList){
+                setBlocksNeighbors(block)
+                setCellsNeighbors(block)
+            }
         }
+
     }
 
     private fun setBlocksNeighbors(block: SudokuBlock){
@@ -150,10 +156,9 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
             while(randomCell.isActualValueHidden){
                 randomCell = assignment.keys.random()
             }
-            CoroutineScope(Main).launch {
-                randomCell.setCellAsUnknown()
-            }
+            randomCell.isActualValueHidden = true
         }
+
     }
 
     private fun showRestOfCells(assignment: MutableMap<Cell, Int>){

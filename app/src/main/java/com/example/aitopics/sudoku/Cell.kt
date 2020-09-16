@@ -44,10 +44,6 @@ class Cell(con: Context, val row: Int, val column: Int, val parent: SudokuBlock)
         }
     }
 
-    fun setCellAsUnknown(){
-        isActualValueHidden = true
-    }
-
     /**
      * Neighbor cells are those on the same row, column and block of the cell
      */
@@ -65,6 +61,13 @@ class Cell(con: Context, val row: Int, val column: Int, val parent: SudokuBlock)
                 }
             }
         }
+    }
+
+    fun reset(){
+        value = 0
+        isActualValueHidden = false
+        text = ""
+        setTextColor(Color.BLACK)
     }
 
     private fun isCellInSameRowOrColumn(potentialNeighbor: Cell): Boolean{
@@ -86,6 +89,5 @@ class Cell(con: Context, val row: Int, val column: Int, val parent: SudokuBlock)
             text = value.toString()
             setTextColor(Color.RED)
         }
-
     }
 }
