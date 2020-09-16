@@ -9,5 +9,4 @@ class SudokuBlock(val row: Int, val column: Int){
     var cellsList = listOf<Cell>()
     // The block on the same row or column of this block
     var neighborsList = listOf<SudokuBlock>()
-
 }

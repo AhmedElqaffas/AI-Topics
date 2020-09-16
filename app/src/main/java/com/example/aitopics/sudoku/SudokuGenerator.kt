@@ -34,7 +34,7 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
 
     private fun setCellsNeighbors(block: SudokuBlock){
         for (cell in block.cellsList) {
-            cell.neighborsList = getNeighborCells(cell)
+            cell.setNeighborCells()
         }
     }
 
@@ -124,28 +124,6 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
         return neighbors
     }
 
-    /**
-     * Neighbor cells are those on the same row, column and block of the cell
-     */
-    private fun getNeighborCells(cell: Cell): List<Cell>{
-        val neighbors = mutableListOf<Cell>()
-        // Add cells in the same block
-        cell.parent.cellsList.forEach {
-            if(it != cell)
-                neighbors.add(it)
-        }
-        // Add cells in same row or column
-        for(block in cell.parent.neighborsList){
-            for(neighborBlockCell in block.cellsList){
-                if(areCellsInSameRowOrColumn(neighborBlockCell, cell)){
-                    neighbors.add(neighborBlockCell)
-                }
-            }
-        }
-        return neighbors
-    }
-
-
     private fun areBlocksInSameColumn(potentialNeighbor: SudokuBlock, current: SudokuBlock): Boolean{
         return potentialNeighbor.column == current.column &&
                 (potentialNeighbor.row == current.row + 1 || potentialNeighbor.row == current.row + 2
@@ -156,10 +134,6 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
         return potentialNeighbor.row == current.row &&
                 (potentialNeighbor.column == current.column + 1 || potentialNeighbor.column == current.column + 2
                         || potentialNeighbor.column == current.column - 1  || potentialNeighbor.column == current.column - 2)
-    }
-
-    private fun areCellsInSameRowOrColumn(potentialNeighbor: Cell, current: Cell): Boolean{
-        return potentialNeighbor.row == current.row || potentialNeighbor.column == current.column
     }
 
     private fun chooseCellsToShowAndHide(backTrackResult: MutableMap<Cell, Int>?) {
@@ -173,10 +147,12 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
     private fun hideSomeCells(assignment: MutableMap<Cell, Int>){
         for(i in 0..16){
             var randomCell = assignment.keys.random()
-            while(randomCell.hidden){
+            while(randomCell.isActualValueHidden){
                 randomCell = assignment.keys.random()
             }
-            randomCell.hidden = true
+            CoroutineScope(Main).launch {
+                randomCell.setCellAsUnknown()
+            }
         }
     }
 
@@ -184,7 +160,7 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
         CoroutineScope(Main).launch {
             for(cell in assignment){
                 cell.key.value = cell.value
-                cell.key.showValue()
+                cell.key.showValueIfClue()
             }
         }
     }

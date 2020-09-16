@@ -9,7 +9,6 @@ class SudokuViewModel: ViewModel() {
 
     private val blocksList = mutableListOf<SudokuBlock>()
     private var sudokuGenerator: SudokuGenerator? = null
-    private var loadingDialogFragment: LoadingDialogFragment? = null
     private var isSudokuGenerated: MutableLiveData<Boolean> = MutableLiveData(false)
 
     fun getBlocks(): MutableList<SudokuBlock>{
