@@ -3,8 +3,10 @@ package com.example.aitopics.sudoku
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.GridLayout
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.view.children
+import androidx.fragment.app.DialogFragment
 import com.example.aitopics.R
 import kotlinx.android.synthetic.main.activity_sudoku.*
 
@@ -17,14 +19,19 @@ class SudokuActivity : AppCompatActivity() {
         setContentView(R.layout.activity_sudoku)
         val blocksList = sudokuViewModel.getBlocks()
         setGridBlocks(blocksList)
-        sudokuViewModel.initializeSudokuGenerator()
+        showLoadingPopupUntilSudokuReady()
+
     }
 
     override fun onDestroy() {
+        removeAllCellViews()
+        super.onDestroy()
+    }
+
+    private fun removeAllCellViews(){
         for(child in sudokuContainer.children){
             (child as GridLayout).removeAllViews()
         }
-        super.onDestroy()
     }
 
     /**
@@ -75,5 +82,26 @@ class SudokuActivity : AppCompatActivity() {
         params.columnSpec = GridLayout.spec(cell.column - (3 * cell.parent.column), 1, 1f)
         params.rowSpec = GridLayout.spec(cell.row - (3 * cell.parent.row), 1, 1f)
         return params
+    }
+
+    private fun showLoadingPopupUntilSudokuReady(){
+        showLoadingDialogIfNotAlreadyShown()
+        sudokuViewModel.initializeSudokuGenerator().observe(this){
+            if(it) {
+                hideLoadingDialogIfExists()
+            }
+        }
+    }
+
+    private fun showLoadingDialogIfNotAlreadyShown(){
+        if(supportFragmentManager.findFragmentByTag("loading") == null){
+            LoadingDialogFragment().show(supportFragmentManager, "loading")
+        }
+    }
+
+    private fun hideLoadingDialogIfExists() {
+        supportFragmentManager.findFragmentByTag("loading")?.let { fragment ->
+            (fragment as DialogFragment).dismiss()
+        }
     }
 }

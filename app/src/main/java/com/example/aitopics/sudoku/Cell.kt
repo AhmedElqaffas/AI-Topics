@@ -19,6 +19,9 @@ class Cell(con: Context, val row: Int, val column: Int, val parent: SudokuBlock)
     // of this cell
     var neighborsList = listOf<Cell>()
 
+    // hidden cells are left for the user to interact with and find their correct values
+    var hidden = false
+
     init {
         setBackgroundColor(Color.GRAY)
         gravity = Gravity.CENTER
@@ -26,6 +29,11 @@ class Cell(con: Context, val row: Int, val column: Int, val parent: SudokuBlock)
     }
 
     fun showValue(){
-        text = value.toString()
+        if(!hidden) {
+            text = value.toString()
+        }
+        else{
+            value = 0
+        }
     }
 }

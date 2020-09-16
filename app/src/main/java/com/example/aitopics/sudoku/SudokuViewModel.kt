@@ -1,11 +1,16 @@
 package com.example.aitopics.sudoku
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.*
 
 class SudokuViewModel: ViewModel() {
 
     private val blocksList = mutableListOf<SudokuBlock>()
-    private lateinit var sudokuGenerator: SudokuGenerator
+    private var sudokuGenerator: SudokuGenerator? = null
+    private var loadingDialogFragment: LoadingDialogFragment? = null
+    private var isSudokuGenerated: MutableLiveData<Boolean> = MutableLiveData(false)
 
     fun getBlocks(): MutableList<SudokuBlock>{
         if(this.blocksList.isEmpty()){
@@ -13,7 +18,6 @@ class SudokuViewModel: ViewModel() {
         }
         return this.blocksList
     }
-
 
     private fun createBlocks(): MutableList<SudokuBlock>{
         val sudokuBlocksList: MutableList<SudokuBlock> = mutableListOf()
@@ -32,7 +36,17 @@ class SudokuViewModel: ViewModel() {
         return sudokuBlocksList
     }
 
-    fun initializeSudokuGenerator(){
-        sudokuGenerator = SudokuGenerator(this.blocksList)
+    fun initializeSudokuGenerator(): LiveData<Boolean>{
+        if(sudokuGenerator == null) {
+            sudokuGenerator = SudokuGenerator(blocksList)
+            generateSudoku()
+        }
+        return isSudokuGenerated
+    }
+
+    private fun generateSudoku(){
+        CoroutineScope(Dispatchers.Default).launch{
+         isSudokuGenerated.postValue(sudokuGenerator!!.generateSudoku())
+        }
     }
 }
