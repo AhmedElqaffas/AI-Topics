@@ -36,6 +36,10 @@ class SudokuViewModel: ViewModel() {
         return sudokuGenerator!!.isAssignmentConsistent(variablesAndValuesMap)
     }
 
+    fun makeAIMove(){
+
+    }
+
     fun resetGame(){
         resetAllCells()
         sudokuGenerator = SudokuGenerator(blocksList)

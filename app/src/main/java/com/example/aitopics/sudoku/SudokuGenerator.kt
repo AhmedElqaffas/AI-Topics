@@ -12,7 +12,7 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
       suspend fun generateSudoku():  Boolean {
         setArcs()
         val backTrackResult = backtrack()
-        chooseCellsToShowAndHide(backTrackResult)
+        chooseAndShowClues(backTrackResult)
         return backTrackResult != null
     }
 
@@ -144,30 +144,32 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
                         || potentialNeighbor.column == current.column - 1  || potentialNeighbor.column == current.column - 2)
     }
 
-    private fun chooseCellsToShowAndHide(backTrackResult: MutableMap<Cell, Int>?) {
-        hideSomeCells(backTrackResult!!)
-        showRestOfCells(backTrackResult)
+    private fun chooseAndShowClues(backTrackResult: MutableMap<Cell, Int>?){
+        val cellsToShow = chooseCellsToShow(backTrackResult!!)
+        showChosenCells(backTrackResult!!, cellsToShow)
     }
 
     /**
-     * We will hide only 17 cell for the user to find their values
+     * We will show only 17 cell for the user as clues
      */
-    private fun hideSomeCells(assignment: MutableMap<Cell, Int>){
+    private fun chooseCellsToShow(assignment: MutableMap<Cell, Int>): MutableList<Cell> {
+        var randomCell: Cell?
+        val randomCellsList = mutableListOf<Cell>()
         for(i in 0..16){
-            var randomCell = assignment.keys.random()
-            while(randomCell.isActualValueHidden){
+            randomCell = assignment.keys.random()
+            while(randomCell!!.isClue){
                 randomCell = assignment.keys.random()
             }
-            randomCell.isActualValueHidden = true
+            randomCell.isClue = true
+            randomCellsList.add(randomCell)
         }
-
+        return randomCellsList
     }
 
-    private fun showRestOfCells(assignment: MutableMap<Cell, Int>){
+    private fun showChosenCells(assignment: MutableMap<Cell, Int>, cellsList: MutableList<Cell>){
         CoroutineScope(Main).launch {
-            for(cell in assignment){
-                cell.key.value = cell.value
-                cell.key.showValueIfClue()
+            cellsList.forEach {
+                it.showCell(assignment[it]!!)
             }
         }
     }

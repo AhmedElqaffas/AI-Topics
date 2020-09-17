@@ -39,6 +39,7 @@ class SudokuActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.checkAnswer -> checkAnswer()
+            R.id.assistMe -> sudokuViewModel.makeAIMove()
             R.id.reset -> sudokuViewModel.resetGame()
         }
         return super.onOptionsItemSelected(item)
