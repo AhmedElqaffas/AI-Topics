@@ -6,14 +6,48 @@ import kotlinx.coroutines.launch
 
 class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
 
+    private var backTrackResult: MutableMap<Cell, Int>? = null
+
     /**
      * Solve the Constraint Satisfaction Problem (CSP)
      */
       suspend fun generateSudoku():  Boolean {
         setArcs()
-        val backTrackResult = backtrack()
-        chooseAndShowClues(backTrackResult)
+        backTrackResult = backtrack()
+        backTrackResult?.let {
+            setCellsValues(it)
+            chooseAndShowClues(backTrackResult)
+        }
+
         return backTrackResult != null
+    }
+
+    fun assistPlayer(){
+        val randomCell = prioritizeAndChooseCell(backTrackResult!!)
+        randomCell?.makeAIMove()
+    }
+
+    /**
+     * The algorithm should first choose a cell that is not revealed yet. If all cells are revealed,
+     * th algorithm should choose cells that are revealed but their isCorrectValueRevealed is false
+     */
+    private fun prioritizeAndChooseCell(backTrackResult: MutableMap<Cell, Int>): Cell?{
+        var cellsMap = backTrackResult.filter {
+            !it.key.isRevealed
+        }
+        // If all cells are revealed
+        if (cellsMap.isEmpty()){
+            cellsMap = backTrackResult.filter{
+                !it.key.isCorrectValueRevealed
+            }
+        }
+
+        return if(cellsMap.isNotEmpty()){
+            cellsMap.keys.random()
+        }
+        else{
+            null
+        }
     }
 
     /**
@@ -144,9 +178,15 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
                         || potentialNeighbor.column == current.column - 1  || potentialNeighbor.column == current.column - 2)
     }
 
+    private fun setCellsValues(backTrackResult: MutableMap<Cell, Int>) {
+        for(entry in backTrackResult.keys){
+            entry.correctValue = backTrackResult[entry]!!
+        }
+    }
+
     private fun chooseAndShowClues(backTrackResult: MutableMap<Cell, Int>?){
         val cellsToShow = chooseCellsToShow(backTrackResult!!)
-        showChosenCells(backTrackResult!!, cellsToShow)
+        showChosenCells(cellsToShow)
     }
 
     /**
@@ -166,10 +206,10 @@ class SudokuGenerator(private val blocksList: List<SudokuBlock>) {
         return randomCellsList
     }
 
-    private fun showChosenCells(assignment: MutableMap<Cell, Int>, cellsList: MutableList<Cell>){
+    private fun showChosenCells(cellsList: MutableList<Cell>){
         CoroutineScope(Main).launch {
             cellsList.forEach {
-                it.showCell(assignment[it]!!)
+                it.showCell()
             }
         }
     }

@@ -30,14 +30,14 @@ class SudokuViewModel: ViewModel() {
         val variablesAndValuesMap = mutableMapOf<Cell, Int>()
         for(block in blocksList){
             for(cell in block.cellsList){
-                variablesAndValuesMap[cell] = cell.value
+                variablesAndValuesMap[cell] = cell.shownValue
             }
         }
         return sudokuGenerator!!.isAssignmentConsistent(variablesAndValuesMap)
     }
 
     fun makeAIMove(){
-
+        sudokuGenerator?.assistPlayer()
     }
 
     fun resetGame(){

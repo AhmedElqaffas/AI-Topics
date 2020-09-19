@@ -13,14 +13,21 @@ class Cell(con: Context, val row: Int, val column: Int, val parent: SudokuBlock)
 
     // Any cell can have any value from 1-9
     val possibleValues: MutableList<Int> = (1..9).toMutableList()
-    // The value this cell got
-    var value = 0
+    // The correct value of this cell
+    var correctValue = 0
+    // The value shown now
+    var shownValue = 0
     // The cells on the same row or column of this cell, in addition to the cells in the same block
     // of this cell
     var neighborsList = mutableListOf<Cell>()
-
     // Clue cells are revealed to the users to help them determine the value of the hidden cells
     var isClue = false
+    // isRevealed indicates whether the a cell value is presented to the user or not, it is not
+    // necessarily the correct value as it may be set by the user
+    var isRevealed = false
+    // isCorrectValueRevealed is only true if the cell is a clue or revealed by the AI assist,
+    // hence, we can be sure that the shown value is correct
+    var isCorrectValueRevealed = false
 
     init {
         setBackgroundColor(Color.GRAY)
@@ -31,9 +38,16 @@ class Cell(con: Context, val row: Int, val column: Int, val parent: SudokuBlock)
         }
     }
 
-    fun showCell(value: Int){
-        this.value = value
-        text = value.toString()
+    fun showCell(){
+        isRevealed = true
+        isCorrectValueRevealed = true
+        shownValue = correctValue
+        text = correctValue.toString()
+    }
+
+    fun makeAIMove(){
+        setTextColor(Color.GREEN)
+        showCell()
     }
 
     /**
@@ -56,8 +70,11 @@ class Cell(con: Context, val row: Int, val column: Int, val parent: SudokuBlock)
     }
 
     fun reset(){
-        value = 0
+        correctValue = 0
+        shownValue = 0
         isClue = false
+        isRevealed = false
+        isCorrectValueRevealed = false
         text = ""
         setTextColor(Color.BLACK)
     }
@@ -74,12 +91,17 @@ class Cell(con: Context, val row: Int, val column: Int, val parent: SudokuBlock)
      */
     private fun incrementValueIfNotClue(){
         if(!isClue){
-            value++
-            if(value == 10){
-                value = 1
+            shownValue++
+            if(shownValue == 10){
+                shownValue = 1
             }
-            text = value.toString()
+            text = shownValue.toString()
             setTextColor(Color.RED)
+            // The user may change a correct value cell that the AI revealed to a wrong value
+            // So, isCorrectValueRevealed should be set to false if the user entered any value
+            // As we can't be sure that it is indeed the correct value
+            isCorrectValueRevealed = false
+            isRevealed = true
         }
     }
 }
