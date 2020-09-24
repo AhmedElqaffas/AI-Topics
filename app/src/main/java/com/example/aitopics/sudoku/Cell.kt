@@ -31,6 +31,8 @@ class Cell(con: Context, val row: Int, val column: Int, val parent: SudokuBlock)
 
     init {
         setBackgroundColor(Color.GRAY)
+        // Empty string to reserve space for the cell and avoid cell expanding after being clicked
+        text = "   "
         gravity = Gravity.CENTER
         setTypeface(null, Typeface.BOLD)
         setOnClickListener {
@@ -75,7 +77,7 @@ class Cell(con: Context, val row: Int, val column: Int, val parent: SudokuBlock)
         isClue = false
         isRevealed = false
         isCorrectValueRevealed = false
-        text = ""
+        text = "   "
         setTextColor(Color.BLACK)
     }
 

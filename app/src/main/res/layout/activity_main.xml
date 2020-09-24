@@ -15,12 +15,11 @@
         android:text="@string/path_finder"
         android:textAllCaps="false"
         android:textSize="20sp"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/assistedMinesweeper"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintWidth_percent="0.7"
-        app:layout_constraintVertical_bias="0.9"/>
+        android:layout_marginBottom="20dp"/>
 
     <Button
         android:id="@+id/assistedMinesweeper"
@@ -45,10 +44,23 @@
         android:textAllCaps="false"
         android:textSize="20sp"
         app:layout_constraintTop_toBottomOf="@id/assistedMinesweeper"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintWidth_percent="0.7"
-        app:layout_constraintVertical_bias="0.1"/>
+        android:layout_marginTop="20dp"/>
+
+    <Button
+        android:id="@+id/ticTacToeButton"
+        android:background="@drawable/curved_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/tic_tac_toe"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        app:layout_constraintTop_toBottomOf="@id/sudokuButton"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintWidth_percent="0.7"
+        android:layout_marginTop="20dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
