@@ -142,7 +142,7 @@ class PathFinderActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu, menu)
+        menuInflater.inflate(R.menu.path_finder_menu, menu)
         return true
     }
 
