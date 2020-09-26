@@ -3,6 +3,8 @@ package com.example.aitopics.tictactoe
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -17,6 +19,18 @@ class TicTacToeActivity : AppCompatActivity() {
 
     private val ticTacToeViewModel: TicTacToeViewModel by viewModels()
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.tictactoe_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.reset -> resetGame()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tic_tac_toe)
@@ -27,11 +41,6 @@ class TicTacToeActivity : AppCompatActivity() {
         trainAI()
     }
 
-    private fun trainAI(){
-        CoroutineScope(Dispatchers.Default).launch {
-            ticTacToeViewModel.trainAI(150000)
-        }
-    }
     private fun showLoadingPopupUntilAITrained(){
         ticTacToeViewModel.observeAITraining().observe(this){
             if(!it){
@@ -65,11 +74,13 @@ class TicTacToeActivity : AppCompatActivity() {
 
     private fun observeCellChanges(){
         ticTacToeViewModel.startGame().observe(this){
-            for(i in 0 until ticTacToeContainer.childCount){
+            for(i in 0 until it.size){
                 val textView = (ticTacToeContainer.getChildAt(i) as TextView)
                 textView.text = it[i]
                 if(it[i] == "O") {
                     textView.setTextColor(Color.RED)
+                }else{
+                    textView.setTextColor(Color.BLACK)
                 }
             }
         }
@@ -81,6 +92,15 @@ class TicTacToeActivity : AppCompatActivity() {
                 setUserInteraction(false)
                 Toast.makeText(this, ticTacToeViewModel.getResult(), Toast.LENGTH_SHORT).show()
             }
+            else{
+                setUserInteraction(true)
+            }
+        }
+    }
+
+    private fun trainAI(){
+        CoroutineScope(Dispatchers.Default).launch {
+            ticTacToeViewModel.trainAI(150000)
         }
     }
 
@@ -88,5 +108,12 @@ class TicTacToeActivity : AppCompatActivity() {
         for(c in ticTacToeContainer.children){
             c.isClickable = state
         }
+    }
+
+    private fun resetGame(){
+        ticTacToeContainer.children.forEach {
+            (it as TextView).text = ""
+        }
+        ticTacToeViewModel.resetGame()
     }
 }

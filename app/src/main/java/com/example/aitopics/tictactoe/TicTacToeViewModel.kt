@@ -2,6 +2,7 @@ package com.example.aitopics.tictactoe
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,7 +15,7 @@ import java.io.OutputStreamWriter
 
 class TicTacToeViewModel(application: Application) : AndroidViewModel(application) {
 
-    var ticTacToeGame: TicTacToeGame = TicTacToeGame()
+    private var ticTacToeGame: TicTacToeGame = TicTacToeGame()
     private var hasAIFinishedTraining: MutableLiveData<Boolean> = MutableLiveData(false)
     private var hasGameConcluded: MutableLiveData<Boolean> = MutableLiveData(false)
     private val cellsList = MutableLiveData<MutableList<String>>()
@@ -47,12 +48,19 @@ class TicTacToeViewModel(application: Application) : AndroidViewModel(applicatio
         return "Draw"
     }
 
+    fun resetGame(){
+        ticTacToeGame.reset()
+        hasGameConcluded.value = false
+        cellsList.value?.clear()
+    }
+
      suspend fun trainAI(numberOfTrials: Int){
+         // This boolean is used to avoid trying to train the model every time the device is rotated
         if(!isAlreadyBeingTrained){
             try{
                 useExistingTrainingData()
                 hasAIFinishedTraining.postValue(true)
-                println("Existing data used")
+                Log.d("TicTacToeViewModel","Existing data used")
             }catch(e: Exception){
                 startNewTraining(numberOfTrials)
                 saveTrainingDataToFile()
@@ -61,21 +69,21 @@ class TicTacToeViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private fun startNewTraining(numberOfTrials: Int) {
-        println("Started Training")
+        Log.d("TicTacToeViewModel","Started Training")
         isAlreadyBeingTrained = true
         for(i in 0..numberOfTrials){
-            ticTacToeGame.reset()
             ticTacToeGame.train()
+            ticTacToeGame.reset()
         }
-        ticTacToeGame.reset()
         hasAIFinishedTraining.postValue(true)
-        println("Done Training")
+        Log.d("TicTacToeViewModel","Done Training")
     }
 
     private fun saveTrainingDataToFile(){
         try{
             val outputStream = OutputStreamWriter(context.openFileOutput("train.txt", Context.MODE_PRIVATE))
             val mapToQValueList = mutableListOf<QValue>()
+            // Convert the QValue map to list of QValue object for easier serialization and deserialization
             TicTacToeModel.qValueMap.forEach{
                 mapToQValueList.add(QValue(it.key, it.value))
             }
@@ -83,7 +91,7 @@ class TicTacToeViewModel(application: Application) : AndroidViewModel(applicatio
             outputStream.flush()
             outputStream.close()
         }catch (e: Exception){
-            println("Couldn't save to file")
+            Log.d("TicTacToeViewModel","Couldn't save to file")
         }
     }
 

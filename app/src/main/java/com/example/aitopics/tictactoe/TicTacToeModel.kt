@@ -7,16 +7,12 @@ import kotlin.random.Random
  * Contains the data that we want to preserve through the session
  */
 object TicTacToeModel {
-    // The key to this map is a pair of:
-    // - The current state, i.e. the list of String representing what each cell value is (X,O,empty)
-    // - A pair of: string representing the character to put (X,O) and an int representing where to
-    // put it
      val qValueMap = mutableMapOf<QValueKey, Double>()
 
     private const val epsilon = 0.2
     private const val alpha = 0.5
 
-    fun getQValue(key: QValueKey): Double{
+    private fun getQValue(key: QValueKey): Double{
         if(!qValueMap.containsKey(key)){
             return 0.0
         }

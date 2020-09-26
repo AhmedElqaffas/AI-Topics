@@ -8,7 +8,7 @@ import java.lang.Exception
  */
 class TicTacToeGame {
 
-    var state = mutableListOf(" "," "," "," "," "," "," "," "," ")
+    private var state = mutableListOf(" "," "," "," "," "," "," "," "," ")
     // Null if no player has won, X if X won, O if O won
     var playerWon: String? = null
     // current player,  either X or O
@@ -26,6 +26,7 @@ class TicTacToeGame {
         val lastStates = mutableMapOf<String, MutableList<String>>()
 
         while(!hasGameEnded()){
+            // Start the game with a random move, otherwise, use chooseAction()
             val action =
             if(state.all { it == " " })
                 TicTacToeModel.chooseRandomAction(state, player)
@@ -33,6 +34,8 @@ class TicTacToeGame {
                 TicTacToeModel.chooseAction(state, player)
 
             lastActions[player] = action
+            // .toMutableList to assign by value not by reference, we don't need lastStates[player]
+            // to keep changing with 'state' list changing
             lastStates[player] = state.toMutableList()
             doAction(action)
             giveRewards(lastActions, lastStates)
@@ -78,7 +81,7 @@ class TicTacToeGame {
         try{
             doAction(TicTacToeModel.chooseBestAction(state, player))
         }catch (e: Exception){
-            Log.i("Making AI move","No Move exists")
+            Log.i("TicTacToeGame","No Move exists")
         }
 
     }
@@ -90,10 +93,13 @@ class TicTacToeGame {
     private fun giveRewards(lastActions: MutableMap<String, Action>,
         lastStates: MutableMap<String, MutableList<String>>){
 
+        // If current player won, reward him and punish last player's move as it led to him losing
         if(hasPlayerWon()){
             TicTacToeModel.update(lastStates[player]!!, lastActions[player]!!, state, 1, player)
             TicTacToeModel.update(lastStates[getOtherPlayer()]!!, lastActions[getOtherPlayer()]!!, state, -1, player)
         }
+        // If no winner, then we can now safely say that last player's move was neutral
+        // However, we don't know if the current player's move will backfire next turn or not
         else{
             if(!lastStates[getOtherPlayer()].isNullOrEmpty()){
                 TicTacToeModel.update(lastStates[getOtherPlayer()]!!, lastActions[getOtherPlayer()]!!, state, 0, player)
