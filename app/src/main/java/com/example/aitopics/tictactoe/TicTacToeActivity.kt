@@ -20,21 +20,20 @@ class TicTacToeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tic_tac_toe)
-        trainAI()
         showLoadingPopupUntilAITrained()
         setClickListeners()
         observeCellChanges()
         observeGameConclusion()
+        trainAI()
     }
 
     private fun trainAI(){
         CoroutineScope(Dispatchers.Default).launch {
-            ticTacToeViewModel.trainAI(100000)
+            ticTacToeViewModel.trainAI(150000)
         }
     }
     private fun showLoadingPopupUntilAITrained(){
         ticTacToeViewModel.observeAITraining().observe(this){
-            println("BOOOOOOL   $it")
             if(!it){
                 showLoadingDialogIfNotAlreadyShown()
             }
@@ -59,7 +58,6 @@ class TicTacToeActivity : AppCompatActivity() {
     private fun setClickListeners(){
         ticTacToeContainer.children.forEach {
             it.setOnClickListener {cell ->
-                println("*******************  ${ticTacToeViewModel.ticTacToeGame}")
                 ticTacToeViewModel.cellClicked(ticTacToeContainer.indexOfChild(cell))
             }
         }

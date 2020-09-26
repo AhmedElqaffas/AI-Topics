@@ -11,16 +11,16 @@ object TicTacToeModel {
     // - The current state, i.e. the list of String representing what each cell value is (X,O,empty)
     // - A pair of: string representing the character to put (X,O) and an int representing where to
     // put it
-     val qValueMap = mutableMapOf<Pair<MutableList<String>, Pair<String, Int>>, Double>()
+     val qValueMap = mutableMapOf<QValueKey, Double>()
 
     private const val epsilon = 0.2
     private const val alpha = 0.5
 
-    fun getQValue(state: MutableList<String>, action: Pair<String, Int>): Double{
-        if(!qValueMap.containsKey(Pair(state, action))){
+    fun getQValue(key: QValueKey): Double{
+        if(!qValueMap.containsKey(key)){
             return 0.0
         }
-        return qValueMap[Pair(state, action)]!!
+        return qValueMap[key]!!
     }
 
     /**
@@ -28,7 +28,7 @@ object TicTacToeModel {
      * in that state, a new resulting state, and the reward received
      * from taking that action.
      */
-    fun update(stateBeforeAction: MutableList<String>, action: Pair<String, Int>,
+    fun update(stateBeforeAction: MutableList<String>, action: Action,
                stateAfterAction: MutableList<String>, reward: Int, player: String){
 
         val bestFutureQValue = getBestFutureQValue(stateAfterAction, player)
@@ -44,15 +44,15 @@ object TicTacToeModel {
      * `state`, return 0.
      */
     private fun getBestFutureQValue(state: MutableList<String>, player: String): Double {
-        val possibleActions = mutableListOf<Double>()
+        val possibleActionsValues = mutableListOf<Double>()
         for(i in 0 until state.size){
-            if(state[i] == ""){
-                possibleActions.add(getQValue(state, Pair(player, i)))
+            if(state[i] == " "){
+                possibleActionsValues.add(getQValue(QValueKey(state, Action(player, i))))
             }
         }
 
-        if(possibleActions.size > 0)
-            return max(possibleActions)
+        if(possibleActionsValues.size > 0)
+            return max(possibleActionsValues)
         return 0.0
     }
 
@@ -68,16 +68,16 @@ object TicTacToeModel {
      * `alpha` is the learning rate, and `new value estimate`
      * is the sum of the current reward and estimated future rewards.
      */
-    private fun updateQValue(stateBeforeAction: MutableList<String>, action: Pair<String, Int>,
+    private fun updateQValue(stateBeforeAction: MutableList<String>, action: Action,
         reward: Int, bestFutureQValue: Double){
 
-        val oldQValue = getQValue(stateBeforeAction, action)
-        qValueMap[Pair(stateBeforeAction, action)] = oldQValue +
+        val oldQValue = getQValue(QValueKey(stateBeforeAction, action))
+        qValueMap[QValueKey(stateBeforeAction, action)] = oldQValue +
                 (alpha * (reward + bestFutureQValue - oldQValue))
 
     }
 
-    fun chooseAction(state: MutableList<String>, player: String): Pair<String, Int>{
+    fun chooseAction(state: MutableList<String>, player: String): Action{
         // Whether to choose a random action (with probability epsilon) or choose best known action
         val shouldChooseRandomly = Random.nextFloat() < epsilon
 
@@ -89,25 +89,25 @@ object TicTacToeModel {
 
     }
 
-     fun chooseRandomAction(state: MutableList<String>, player: String): Pair<String, Int>{
-        val actions = mutableListOf<Pair<String, Int>>()
+     fun chooseRandomAction(state: MutableList<String>, player: String): Action{
+        val actions = mutableListOf<Action>()
         for(i in 0 until state.size){
-            if(state[i] == ""){
-                actions.add(Pair(player, i))
+            if(state[i] == " "){
+                actions.add(Action(player, i))
             }
         }
         return actions.random()
     }
 
-     fun chooseBestAction(state: MutableList<String>, player: String): Pair<String, Int>{
-        var bestAction: Pair<String, Int> = Pair("",0)
+     fun chooseBestAction(state: MutableList<String>, player: String): Action{
+        var bestAction = Action("",0)
         var maxQValue = -2.0
         for(i in 0 until state.size){
-            if(state[i] == ""){
-                val qValue = getQValue(state, Pair(player, i))
+            if(state[i] == " "){
+                val qValue = getQValue(QValueKey(state, Action(player, i)))
                 if(qValue > maxQValue){
                     maxQValue = qValue
-                    bestAction = Pair(player, i)
+                    bestAction = Action(player, i)
                 }
             }
         }

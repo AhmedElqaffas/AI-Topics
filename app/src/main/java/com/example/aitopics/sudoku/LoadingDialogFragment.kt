@@ -25,6 +25,7 @@ class LoadingDialogFragment(private val message: String) : DialogFragment() {
         super.onResume()
         setDimensions()
         setMessage()
+        avoidDialogCancellation()
     }
 
     override fun onDestroyView() {
@@ -42,5 +43,9 @@ class LoadingDialogFragment(private val message: String) : DialogFragment() {
 
     private fun setMessage(){
         loadingMessage.text = message
+    }
+
+    private fun avoidDialogCancellation(){
+        isCancelable = false
     }
 }

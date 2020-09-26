@@ -49,4 +49,8 @@ dependencies {
     // LiveData
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.2.0"
     implementation "androidx.activity:activity-ktx:1.1.0"
+    // Preferences DataStore
+    implementation "androidx.datastore:datastore-preferences:1.0.0-alpha01"
+    // Gson
+    implementation 'com.google.code.gson:gson:2.8.6'
 }

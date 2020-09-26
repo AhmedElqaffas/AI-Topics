@@ -8,26 +8,26 @@ import java.lang.Exception
  */
 class TicTacToeGame {
 
-    var state = mutableListOf("","","","","","","","","")
+    var state = mutableListOf(" "," "," "," "," "," "," "," "," ")
     // Null if no player has won, X if X won, O if O won
     var playerWon: String? = null
     // current player,  either X or O
     private var player = "X"
 
     fun cellClicked(cellIndex: Int): MutableList<String>{
-        if(state[cellIndex] == ""){
+        if(state[cellIndex] == " "){
             userPlayed(cellIndex)
         }
         return state
     }
 
     fun train(){
-        val lastActions = mutableMapOf<String, Pair<String, Int>>()
+        val lastActions = mutableMapOf<String, Action>()
         val lastStates = mutableMapOf<String, MutableList<String>>()
 
         while(!hasGameEnded()){
             val action =
-            if(state.all { it == "" })
+            if(state.all { it == " " })
                 TicTacToeModel.chooseRandomAction(state, player)
             else
                 TicTacToeModel.chooseAction(state, player)
@@ -46,7 +46,7 @@ class TicTacToeGame {
     }
 
     fun reset(){
-        state = mutableListOf("","","","","","","","","")
+        state = mutableListOf(" " ," "," "," "," "," "," "," "," ")
         player = "X"
         playerWon = null
     }
@@ -83,11 +83,11 @@ class TicTacToeGame {
 
     }
 
-    private fun doAction(action: Pair<String, Int>){
-        state[action.second] = action.first
+    private fun doAction(action: Action){
+        state[action.index] = action.symbol
     }
 
-    private fun giveRewards(lastActions: MutableMap<String, Pair<String, Int>>,
+    private fun giveRewards(lastActions: MutableMap<String, Action>,
         lastStates: MutableMap<String, MutableList<String>>){
 
         if(hasPlayerWon()){
@@ -103,18 +103,18 @@ class TicTacToeGame {
     }
 
     private fun areAllCellsFilled(): Boolean{
-        return !state.contains("")
+        return !state.contains(" ")
     }
 
     private fun hasPlayerWon(): Boolean{
-        val hasWon =  ((state[0] != "" && state[1] != "" && state[2] != "" && state[0] == state [1] && state[1] == state [2])
-            || (state[3] != "" && state[4] != "" && state[5] != "" && state[3] == state [4] && state[4] == state [5])
-            || (state[6] != "" && state[7] != "" && state[8] != "" && state[6] == state [7] && state[7] == state [8])
-            || (state[0] != "" && state[3] != "" && state[6] != "" && state[0] == state [3] && state[3] == state [6])
-            || (state[1] != "" && state[4] != "" && state[7] != "" && state[1] == state [4] && state[4] == state [7])
-            || (state[2] != "" && state[5] != "" && state[8] != "" && state[2] == state [5] && state[5] == state [8])
-            || (state[0] != "" && state[4] != "" && state[8] != "" && state[0] == state [4] && state[4] == state [8])
-            || (state[2] != "" && state[4] != "" && state[6] != "" && state[2] == state [4] && state[4] == state [6]))
+        val hasWon =  ((state[0] != " " && state[1] != " " && state[2] != " " && state[0] == state [1] && state[1] == state [2])
+            || (state[3] != " " && state[4] != " " && state[5] != " " && state[3] == state [4] && state[4] == state [5])
+            || (state[6] != " " && state[7] != " " && state[8] != " " && state[6] == state [7] && state[7] == state [8])
+            || (state[0] != " " && state[3] != " " && state[6] != " " && state[0] == state [3] && state[3] == state [6])
+            || (state[1] != " " && state[4] != " " && state[7] != " " && state[1] == state [4] && state[4] == state [7])
+            || (state[2] != " " && state[5] != " " && state[8] != " " && state[2] == state [5] && state[5] == state [8])
+            || (state[0] != " " && state[4] != " " && state[8] != " " && state[0] == state [4] && state[4] == state [8])
+            || (state[2] != " " && state[4] != " " && state[6] != " " && state[2] == state [4] && state[4] == state [6]))
         if(hasWon){
             playerWon = player
         }
