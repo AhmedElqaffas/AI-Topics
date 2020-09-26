@@ -125,7 +125,7 @@ class SudokuActivity : AppCompatActivity() {
 
     private fun showLoadingDialogIfNotAlreadyShown(){
         if(supportFragmentManager.findFragmentByTag("loading") == null){
-            LoadingDialogFragment().show(supportFragmentManager, "loading")
+            LoadingDialogFragment("Generating A Lovely Sudoku").show(supportFragmentManager, "loading")
         }
     }
 

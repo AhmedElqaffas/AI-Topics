@@ -6,9 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.example.aitopics.R
+import kotlinx.android.synthetic.main.fragment_loading_dialog.*
 
 
-class LoadingDialogFragment : DialogFragment() {
+class LoadingDialogFragment(private val message: String) : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,9 +23,9 @@ class LoadingDialogFragment : DialogFragment() {
 
     override fun onResume() {
         super.onResume()
-        val width = activity!!.resources.displayMetrics.widthPixels
-        val height = activity!!.resources.displayMetrics.heightPixels  / 2
-        dialog!!.window!!.setLayout(width, height)
+        setDimensions()
+        setMessage()
+        avoidDialogCancellation()
     }
 
     override fun onDestroyView() {
@@ -34,4 +35,17 @@ class LoadingDialogFragment : DialogFragment() {
         super.onDestroyView()
     }
 
+    private fun setDimensions(){
+        val width = activity!!.resources.displayMetrics.widthPixels
+        val height = activity!!.resources.displayMetrics.heightPixels  / 2
+        dialog!!.window!!.setLayout(width, height)
+    }
+
+    private fun setMessage(){
+        loadingMessage.text = message
+    }
+
+    private fun avoidDialogCancellation(){
+        isCancelable = false
+    }
 }

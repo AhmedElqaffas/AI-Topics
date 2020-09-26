@@ -6,6 +6,7 @@ import android.os.Bundle
 import com.example.aitopics.minesweeper.MinesweeperActivity
 import com.example.aitopics.pathfinder.PathFinderActivity
 import com.example.aitopics.sudoku.SudokuActivity
+import com.example.aitopics.tictactoe.TicTacToeActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -22,5 +23,9 @@ class MainActivity : AppCompatActivity() {
         sudokuButton.setOnClickListener {
             startActivity(Intent(this, SudokuActivity::class.java))
         }
+        ticTacToeButton.setOnClickListener {
+            startActivity(Intent(this, TicTacToeActivity::class.java))
+        }
+
     }
 }

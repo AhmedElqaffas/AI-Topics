@@ -21,6 +21,7 @@ class Cell(context: Context, val row: Int, val column: Int):
 
     init{
         setBackgroundColor(Color.BLACK)
+        text = "    "
         setTextColor(Color.WHITE)
         gravity = Gravity.CENTER
         setTypeface(null, Typeface.BOLD)
@@ -61,6 +62,6 @@ class Cell(context: Context, val row: Int, val column: Int):
         isRevealed = false
         minesNearby = 0
         isMine = false
-        text = ""
+        text = "    "
     }
 }
