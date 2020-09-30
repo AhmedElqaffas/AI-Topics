@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.aitopics.minesweeper.MinesweeperActivity
 import com.example.aitopics.pathfinder.PathFinderActivity
+import com.example.aitopics.questionsbot.QuestionsActivity
 import com.example.aitopics.sudoku.SudokuActivity
 import com.example.aitopics.tictactoe.TicTacToeActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -25,6 +26,10 @@ class MainActivity : AppCompatActivity() {
         }
         ticTacToeButton.setOnClickListener {
             startActivity(Intent(this, TicTacToeActivity::class.java))
+        }
+
+        questionsBotButton.setOnClickListener {
+            startActivity(Intent(this, QuestionsActivity::class.java))
         }
 
     }
