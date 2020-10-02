@@ -1,6 +1,7 @@
 package com.example.aitopics.questionsbot
 
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
@@ -214,6 +215,8 @@ class QuestionsActivity : AppCompatActivity() {
     private val filesWords = mutableMapOf<String, List<String>>()
     // A map between each word and it IDF value
     private var wordsIDFS = mapOf<String, Double>()
+    // Text to speech engine
+    private lateinit var textToSpeech: TextToSpeech
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -222,6 +225,15 @@ class QuestionsActivity : AppCompatActivity() {
         initializeProcessing()
         customizeEditText()
         setButtonClickListener()
+        initializeTextToSpeech()
+    }
+
+    override fun onDestroy() {
+        textToSpeech?.apply {
+            this.stop()
+            this.shutdown()
+        }
+        super.onDestroy()
     }
 
     /** This method loads the files and get the IDF of each word in these files,
@@ -384,7 +396,12 @@ class QuestionsActivity : AppCompatActivity() {
     private fun setButtonClickListener(){
         findAnswerButton.setOnClickListener {
             val answer = getAnswerToQuestion()
-            answerTextView.text = answer
+            if(answer.isEmpty()){
+                Toast.makeText(this, "No Result Found", Toast.LENGTH_SHORT).show()
+            }else{
+                answerTextView.text = answer
+                convertTextToSpeech(answer)
+            }
         }
     }
 
@@ -406,10 +423,11 @@ class QuestionsActivity : AppCompatActivity() {
      * Returns the name of the file that best matches the query entered by the user
      */
     private fun getTopMatchingFile(questionTokenized: Set<String>): String{
-        var maxTFIDF = 0.0
+        var maxTFIDF = -1.0
         var bestFile = ""
         filesWords.forEach{ file ->
             val tfidf = getFileTFIDF(questionTokenized, file)
+            println(tfidf)
             if(tfidf > maxTFIDF){
                 maxTFIDF = tfidf
                 bestFile = file.key
@@ -474,12 +492,13 @@ class QuestionsActivity : AppCompatActivity() {
             if(currentIDF > bestIDF){
                 bestIDF = currentIDF
                 bestSentences.clear()
-                bestSentences.add(sentence.key)
+                bestSentences.add(sentence.key.toLowerCase(Locale.ROOT))
             }
             else if(currentIDF == bestIDF){
-                bestSentences.add(sentence.key)
+                bestSentences.add(sentence.key.toLowerCase(Locale.ROOT))
             }
         }
+
         // If only one top matching sentence found, return it
         return if(bestSentences.size == 1){
             bestSentences[0]
@@ -505,7 +524,7 @@ class QuestionsActivity : AppCompatActivity() {
                     frequency++
                 }
             }
-            val queryDensity = frequency / sentence.length.toDouble()
+            val queryDensity = frequency.toDouble() / sentence.length.toDouble()
             if( queryDensity > bestQueryDensity){
                 bestQueryDensity = queryDensity
                 bestSentence = sentence
@@ -535,5 +554,22 @@ class QuestionsActivity : AppCompatActivity() {
         questionEditText.setHorizontallyScrolling(false)
         questionEditText.maxLines = 10
         questionEditText.imeOptions = EditorInfo.IME_ACTION_DONE
+    }
+
+    private fun initializeTextToSpeech(){
+        textToSpeech = TextToSpeech(this) {
+            if (it == TextToSpeech.SUCCESS){
+                val result = textToSpeech.setLanguage(Locale.US)
+                if(result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED){
+                    Log.d("QuestionsActivity", "Language not supported")
+                }
+            }else{
+                Log.d("QuestionsActivity", "Could not initialize text to speech")
+            }
+        }
+    }
+
+    private fun convertTextToSpeech(text: String){
+        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 }
