@@ -25,7 +25,6 @@ import java.util.*
 
 
 class QuestionsActivity : AppCompatActivity() {
-
     private val punctuation = "!\"#\$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
     private val stopWords = arrayOf(
         "i",
@@ -209,10 +208,12 @@ class QuestionsActivity : AppCompatActivity() {
         "wouldn't"
     )
 
+    // A map between file names and their text
     private lateinit var files: MutableMap<String, String>
-    private var filesIDFS = mapOf<String, Double>()
+    // A map between file names and their text tokenized into words
     private val filesWords = mutableMapOf<String, List<String>>()
-    private var isAlreadyProcessing = false
+    // A map between each word and it IDF value
+    private var wordsIDFS = mapOf<String, Double>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -220,26 +221,19 @@ class QuestionsActivity : AppCompatActivity() {
 
         initializeProcessing()
         customizeEditText()
-        findAnswerButton.setOnClickListener {
-            if(filesIDFS.isNotEmpty()){
-                val answer = getAnswerToQuestion()
-                answerTextView.text = answer
-            }
-            else{
-                Toast.makeText(this, "Please wait until data is loaded", Toast.LENGTH_SHORT).show()
-            }
-
-        }
+        setButtonClickListener()
     }
 
+    /** This method loads the files and get the IDF of each word in these files,
+     * it shows a loading dialog fragment while doing so.
+     */
     private fun initializeProcessing(){
-        isAlreadyProcessing = true
         showLoadingDialogIfNotAlreadyShown()
         CoroutineScope(Dispatchers.Default).launch {
             loadFilesContents()
             processFilesContents()
         }.invokeOnCompletion {
-            saveIDFSToFile()
+            saveIDFSToFileIFNotSaved()
             hideLoadingDialogIfExists()
         }
 
@@ -253,8 +247,9 @@ class QuestionsActivity : AppCompatActivity() {
     }
 
     /**
-     * Given a directory name, return a dictionary mapping the filename of each
-     * `.txt` file inside that directory to the file's contents as a string.
+     * This method accesses the assets directory to read the files from it.
+     * To filter out other files in the assets directory which are automatically generated, we
+     * specify .txt only files to be read
      */
     private fun loadFiles(): MutableMap<String, String>{
         val filesContentMap = mutableMapOf<String, String>()
@@ -280,6 +275,9 @@ class QuestionsActivity : AppCompatActivity() {
         return fileContent
     }
 
+    /**
+     * This method uses the 'files' variable to initialize the 'fileWords' and 'wordsIDFS' maps
+     */
     private suspend fun processFilesContents(){
         for (file in files) {
             filesWords[file.key] = tokenize(file.value)
@@ -304,7 +302,7 @@ class QuestionsActivity : AppCompatActivity() {
      * and is loaded when the user reuses the activity instead of recomputing them
      */
     private suspend fun getIDFS(){
-        filesIDFS = try{
+        wordsIDFS = try{
             loadSavedIDFS()
         }catch(e: Exception){
             val idfJob = CoroutineScope(Dispatchers.Default).async {
@@ -333,11 +331,20 @@ class QuestionsActivity : AppCompatActivity() {
         return stringBuilder.toString()
     }
 
+    /**
+     * Checks if IDFS are already saved in a file or not. If not saved, it saves them.
+     */
+    private fun saveIDFSToFileIFNotSaved(){
+        if(!fileList().contains("idfs.txt")){
+            saveIDFSToFile()
+        }
+    }
+
     private fun saveIDFSToFile(){
         CoroutineScope(IO).launch {
             try{
                 val outputStream = OutputStreamWriter(openFileOutput("idfs.txt", MODE_PRIVATE))
-                outputStream.write(Gson().toJson(filesIDFS))
+                outputStream.write(Gson().toJson(wordsIDFS))
                 outputStream.flush()
                 outputStream.close()
             }catch (e: Exception){
@@ -363,10 +370,8 @@ class QuestionsActivity : AppCompatActivity() {
         return wordsIDFMap
     }
 
-    private fun getNumberOfDocumentsContainingWord(
-        filesWords: MutableMap<String, List<String>>,
-        word: String
-    ): Int {
+    private fun getNumberOfDocumentsContainingWord(filesWords: MutableMap<String, List<String>>,
+                                                   word: String): Int{
         var frequency = 0
         filesWords.forEach{ file ->
             if(word in file.value){
@@ -374,6 +379,13 @@ class QuestionsActivity : AppCompatActivity() {
             }
         }
         return frequency
+    }
+
+    private fun setButtonClickListener(){
+        findAnswerButton.setOnClickListener {
+            val answer = getAnswerToQuestion()
+            answerTextView.text = answer
+        }
     }
 
     private fun getAnswerToQuestion(): String{
@@ -386,7 +398,6 @@ class QuestionsActivity : AppCompatActivity() {
         }
         val sentences = extractSentences(topFile)
         val sentencesIDF = computeIDFS(sentences)
-        println(sentences.toString())
         return getTopMatchingSentence(questionTokenized, sentences, sentencesIDF)
 
     }
@@ -411,7 +422,7 @@ class QuestionsActivity : AppCompatActivity() {
         var currentTFIDF = 0.0
             questionTokenized.forEach{ word ->
             if(file.value.contains(word)){
-                currentTFIDF += (filesIDFS[word]!! * getWordFrequency(word, file.value))
+                currentTFIDF += (wordsIDFS[word]!! * getWordFrequency(word, file.value))
             }
         }
         return currentTFIDF
@@ -421,9 +432,15 @@ class QuestionsActivity : AppCompatActivity() {
         return fileText.filter { it == word }.size
     }
 
+    /**
+     * Splits a file text to sentences (split when a period is found) and returns a map between
+     * sentences and their list of words
+     */
     private fun extractSentences(file: String): MutableMap<String, List<String>>{
         val sentences = mutableMapOf<String, List<String>>()
+        // Split text to paragraph at first
         for(paragraph in files[file]!!.split("\n")){
+            // Split paragraph to sentences
             for(sentence in tokenizeSentences(paragraph)){
                 val tokens = tokenize(sentence)
                 if(!tokens.isNullOrEmpty()){
@@ -441,12 +458,11 @@ class QuestionsActivity : AppCompatActivity() {
         return paragraph.split(Regex("\\.[^0-9]"))
     }
 
-    private fun getTopMatchingSentence(
-        questionTokenized: Set<String>,
-        sentences: MutableMap<String, List<String>>,
-        sentencesIDF: Map<String, Double>
-    ): String{
+    private fun getTopMatchingSentence(questionTokenized: Set<String>,
+                                       sentences: MutableMap<String, List<String>>,
+                                       sentencesIDF: Map<String, Double>): String{
         var bestIDF = 0.0
+        // Keeps track of top matching sentences found
         val bestSentences = mutableListOf<String>()
         sentences.forEach{ sentence ->
             var currentIDF = 0.0
@@ -464,12 +480,11 @@ class QuestionsActivity : AppCompatActivity() {
                 bestSentences.add(sentence.key)
             }
         }
+        // If only one top matching sentence found, return it
         return if(bestSentences.size == 1){
             bestSentences[0]
         } else{
-            bestSentences.forEach{
-                print(it)
-            }
+            // if multiple sentences have the same IDF, get the one with the highest query density
             getSentenceBasedOnQueryDensity(questionTokenized, bestSentences)
         }
     }
@@ -479,10 +494,8 @@ class QuestionsActivity : AppCompatActivity() {
      * For example, if a sentence has 10 words, 3 of which are in the query,
      * then the sentence’s query term density is 0.3
      */
-    private fun getSentenceBasedOnQueryDensity(
-        questionTokenized: Set<String>,
-        sentences: MutableList<String>
-    ): String{
+    private fun getSentenceBasedOnQueryDensity(questionTokenized: Set<String>,
+                                               sentences: MutableList<String>): String{
         var bestQueryDensity = 0.0
         var bestSentence = ""
         sentences.forEach { sentence ->
@@ -513,6 +526,10 @@ class QuestionsActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Instead of scrolling horizontally, the text is broken into a new line and the editText height
+     * expands dynamically.
+     */
     private fun customizeEditText(){
         questionEditText.isSingleLine = true
         questionEditText.setHorizontallyScrolling(false)
