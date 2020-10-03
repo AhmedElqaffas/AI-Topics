@@ -14,7 +14,7 @@
         <activity android:name=".sudoku.SudokuActivity" />
         <activity android:name=".minesweeper.MinesweeperActivity" />
         <activity android:name=".pathfinder.PathFinderActivity" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".mainmenu.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

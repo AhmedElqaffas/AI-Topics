@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter
 import java.lang.Math.log
 import java.nio.charset.StandardCharsets
 import java.util.*
+import kotlin.math.ln
 
 
 class QuestionsActivity : AppCompatActivity() {
@@ -229,7 +230,7 @@ class QuestionsActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        textToSpeech?.apply {
+        textToSpeech.apply {
             this.stop()
             this.shutdown()
         }
@@ -375,7 +376,7 @@ class QuestionsActivity : AppCompatActivity() {
             for(word in file.value){
                 if(!wordsIDFMap.containsKey(word)){
                     val wordFrequencyInAllDocuments = getNumberOfDocumentsContainingWord(words, word)
-                    wordsIDFMap[word] = log((words.size / wordFrequencyInAllDocuments.toDouble()))
+                    wordsIDFMap[word] = ln((words.size / wordFrequencyInAllDocuments.toDouble()))
                 }
             }
         }
