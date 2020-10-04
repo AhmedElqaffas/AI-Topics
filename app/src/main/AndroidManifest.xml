@@ -9,11 +9,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".tictactoe.TicTacToeActivity"></activity>
+        <activity android:name=".questionsbot.QuestionsActivity"></activity>
+        <activity android:name=".tictactoe.TicTacToeActivity" />
         <activity android:name=".sudoku.SudokuActivity" />
         <activity android:name=".minesweeper.MinesweeperActivity" />
         <activity android:name=".pathfinder.PathFinderActivity" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".mainmenu.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

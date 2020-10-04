@@ -51,4 +51,9 @@ dependencies {
     implementation "androidx.activity:activity-ktx:1.1.0"
     // Gson
     implementation 'com.google.code.gson:gson:2.8.6'
+    // RecyclerView
+    implementation "androidx.recyclerview:recyclerview:1.1.0"
+    // CardView
+    implementation "androidx.cardview:cardview:1.0.0"
+
 }
