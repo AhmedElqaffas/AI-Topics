@@ -42,3 +42,9 @@ Using reinforcement learning, this mini-app is trained by playing against itself
 <p align="center"><img src="/screenshots/tictactoe.jpeg" alt="AI Beating User" width="250" height="400"></p>
 
 
+## Arsenal Bot
+
+A mini-app that uses natural language processing to answer user's query (regarding arsenal football team) based on information provided to the algorithm through text files. The app also converts the answer to speech for better user experience.
+<p align="center"><img src="/screenshots/bot.jpeg" alt="Answering User Query" width="250" height="400"></p>
+
+
